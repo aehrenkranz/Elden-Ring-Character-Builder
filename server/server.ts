@@ -7,6 +7,7 @@ import {
   defaultMiddleware,
   errorMiddleware,
 } from './lib/index.js';
+import { nextTick } from 'node:process';
 
 const connectionString =
   process.env.DATABASE_URL ||
@@ -29,10 +30,161 @@ app.use(express.static(reactStaticDir));
 app.use(express.static(uploadsStaticDir));
 app.use(express.json());
 
-app.get('/api/hello', (req, res) => {
-  res.json({ message: 'Hello, World!' });
+app.get('/api/classes', async (req, res, next) => {
+  try {
+    const sql = `
+    select *
+    from "classes"
+    order by "id"
+    `;
+    const result = await db.query(sql);
+    res.json(result.rows);
+  } catch (err) {
+    next(err);
+  }
 });
 
+app.get('/api/class/:id', async (req, res, next) => {
+  try {
+    const classId = Number(req.params.id);
+    const sql = `
+    select * from "classes"
+    where "id"=$1
+
+    `;
+    const params = [classId];
+    const result = await db.query(sql, params);
+    const selectedClass = result.rows[0];
+    res.json(selectedClass);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.get('/api/builds/users/:userId', async (req, res, next) => {
+  try {
+    const userId = Number(req.params.userId);
+    const sql = `
+  select * from "builds"
+  where "userId"=$1
+
+  `;
+    const params = [userId];
+    const result = await db.query(sql, params);
+    const userBuilds = result.rows;
+    res.json(userBuilds);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.get('/api/builds/:id', async (req, res, next) => {
+  try {
+    const buildId = Number(req.params.id);
+    const sql = `
+  select * from "builds"
+  where "id" =$1
+  `;
+    const params = [buildId];
+    const result = await db.query(sql, params);
+    const selectedBuild = result.rows[0];
+    res.json(selectedBuild);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.post('/api/builds', async (req, res, next) => {
+  try {
+    const build = req.body;
+    const sql = `
+      insert into "builds" ("userId","classId","buildName","characterName","vigor","mind","endurance","strength","dexterity","intelligence","faith","arcane")
+      values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+      returning *
+      `;
+    const params = [
+      Number(build.userId),
+      Number(build.classId),
+      build.buildName,
+      build.characterName,
+      build.vigor,
+      build.mind,
+      build.endurance,
+      build.strength,
+      build.dexterity,
+      build.intelligence,
+      build.faith,
+      build.arcane,
+    ];
+    const result = await db.query(sql, params);
+    const [newBuild] = result.rows;
+    res.json(newBuild);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.put('/api/builds/:id', async (req, res, next) => {
+  try {
+    const buildId = Number(req.params.id);
+    const build = req.body;
+    const sql = `
+    update "builds"
+    set "classId"=$1,
+    "buildName"=$2,
+    "characterName"=$3,
+    "vigor"=$4,
+    "mind"=$5,
+    "endurance"=$6,
+    "strength"=$7,
+    "dexterity"=$8,
+    "intelligence"=$9,
+    "faith"=$10,
+    "arcane"=$11
+    where "id"=$12
+    returning *
+  `;
+    const params = [
+      Number(build.classId),
+      build.buildName,
+      build.characterName,
+      build.vigor,
+      build.mind,
+      build.endurance,
+      build.strength,
+      build.dexterity,
+      build.intelligence,
+      build.faith,
+      build.arcane,
+      buildId,
+    ];
+    const result = await db.query(sql, params);
+    const updatedBuild = result.rows[0];
+    res.json(updatedBuild);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.delete('/api/builds/:id', async (req, res, next) => {
+  try {
+    const buildId = req.params.id;
+    const sql = `
+    delete from "builds"
+    where "id"=$1
+    returning *
+    `;
+    const params = [buildId];
+    const result = await db.query(sql, params);
+     if (!result.rows[0]) {
+       throw new ClientError(404, 'Referenced Build ID was not found.');
+     }
+    const deletedBuild = result.rows[0];
+    res.json(deletedBuild);
+  } catch (err) {
+    next(err);
+  }
+});
 /*
  * Middleware that handles paths that aren't handled by static middleware
  * or API route handlers.
