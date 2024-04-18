@@ -19,8 +19,9 @@ CREATE TABLE "classes" (
 );
 
 CREATE TABLE "builds" (
-  "userId" serial PRIMARY KEY,
-  "classId" serial,
+  "id" serial PRIMARY KEY,
+  "userId" integer,
+  "classId" integer,
   "buildName" text,
   "characterName" text,
   "vigor" integer,
