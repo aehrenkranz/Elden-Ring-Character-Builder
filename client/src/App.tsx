@@ -1,14 +1,25 @@
-import { useEffect, useState } from 'react';
+// import { useState } from 'react';
+import { BuildList } from './components/BuildList';
 import './App.css';
-import Button from '@mui/material/Button'
-export default function App() {
 
+export default function App() {
+  // const [page, setPage] = useState('builds');
+  // const [editing, setEditing] = useState<any>();
+
+  // function handleNavigate(page) {
+  //   setPage(page);
+  //   if (page === 'builds') {
+  //     setEditing(undefined);
+  //   } else if (page === 'signOut') {
+  //     sessionStorage.removeItem('token');
+  //     setPage('sign-in');
+  //   }
+  // }
 
   return (
     <>
-    <Button variant="contained" sx={{
-     fontFamily: 'Oswald', textTransform:'capitalize'
-    }}>test</Button>
+      {' '}
+      <BuildList />
     </>
   );
 }

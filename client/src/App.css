@@ -2,20 +2,31 @@ html {
   height: 100%;
 }
 
-img{
+#root {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: Oswald, sans-serif;
+}
+
+img {
   width: 100%;
 }
 
 body {
   margin: 0;
   height: 100%;
-  display: flex;
   background-image: url('./assets/mobile-background.webp');
   background-size: 100% 100%;
-  box-shadow: inset 0 0 0 10000px rgba(0, 0, 0, 0.684)
+  box-shadow: inset 0 0 0 10000px rgba(0, 0, 0, 0.684);
 }
 
-@media screen and (width>990px){
-  body{background-image: url('./assets/desktop-background.webp');}
+@media screen and (width>990px) {
+  body {
+    background-image: url('./assets/desktop-background.webp');
+  }
+}
 
+li {
+  color: white;
 }
