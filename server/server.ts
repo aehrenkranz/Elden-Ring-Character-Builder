@@ -61,15 +61,14 @@ app.get('/api/class/:id', async (req, res, next) => {
   }
 });
 
-app.get('/api/builds/users/:userId', async (req, res, next) => {
+app.get('/api/builds/', async (req, res, next) => {
   try {
-    const userId = Number(req.params.userId);
     const sql = `
   select * from "builds"
   where "userId"=$1
 
   `;
-    const params = [userId];
+    const params = [1];
     const result = await db.query(sql, params);
     const userBuilds = result.rows;
     res.json(userBuilds);
@@ -176,9 +175,9 @@ app.delete('/api/builds/:id', async (req, res, next) => {
     `;
     const params = [buildId];
     const result = await db.query(sql, params);
-     if (!result.rows[0]) {
-       throw new ClientError(404, 'Referenced Build ID was not found.');
-     }
+    if (!result.rows[0]) {
+      throw new ClientError(404, 'Referenced Build ID was not found.');
+    }
     const deletedBuild = result.rows[0];
     res.json(deletedBuild);
   } catch (err) {
