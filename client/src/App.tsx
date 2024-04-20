@@ -1,6 +1,7 @@
 // import { useState } from 'react';
-import { BuildList } from './components/BuildList';
+
 import './App.css';
+import { BuildForm } from './components/BuildForm';
 
 export default function App() {
   // const [page, setPage] = useState('builds');
@@ -18,8 +19,7 @@ export default function App() {
 
   return (
     <>
-      {' '}
-      <BuildList />
+      <BuildForm />
     </>
   );
 }
