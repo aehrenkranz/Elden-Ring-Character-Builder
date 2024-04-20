@@ -48,7 +48,7 @@ app.get('/api/class/:id', async (req, res, next) => {
   try {
     const classId = Number(req.params.id);
     const sql = `
-    select * from "classes"
+    select "vigor","mind","endurance","strength","dexterity","intelligence","faith","arcane"from "classes"
     where "id"=$1
 
     `;
@@ -97,15 +97,15 @@ app.post('/api/builds', async (req, res, next) => {
   try {
     const build = req.body;
     const sql = `
-      insert into "builds" ("userId","classId","buildName","characterName","vigor","mind","endurance","strength","dexterity","intelligence","faith","arcane")
-      values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+      insert into "builds" ("classId","buildName","characterName","vigor","mind","endurance","strength","dexterity","intelligence","faith","arcane")
+      values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
       returning *
       `;
     const params = [
-      Number(build.userId),
-      Number(build.classId),
-      build.buildName,
-      build.characterName,
+      // Number(build.userId),
+      Number(build['class-name']),
+      build['build-name'],
+      build['character-name'],
       build.vigor,
       build.mind,
       build.endurance,
