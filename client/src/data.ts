@@ -34,12 +34,19 @@ export async function addBuild(build) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      // Authorization: `Bearer ${sessionStorage.getItem('token')}`,
+      Authorization: `Bearer ${sessionStorage.getItem('token')}`,
     },
     body: JSON.stringify(build),
   };
   const res = await fetch('/api/builds', req);
-  if (!res.ok) throw new Error(`fetch Error ${res.status}`);
+
+  if (!res.ok && res.status === 401) {
+    alert('Please log in to save.');
+  }
+  if (!res.ok) {
+    throw new Error(`fetch Error ${res.status}`);
+  }
+
   return await res.json();
 }
 

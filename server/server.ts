@@ -2,7 +2,10 @@
 import 'dotenv/config';
 import express from 'express';
 import pg from 'pg';
+import argon2 from 'argon2';
+import jwt from 'jsonwebtoken';
 import {
+  authMiddleware,
   ClientError,
   defaultMiddleware,
   errorMiddleware,
@@ -29,6 +32,59 @@ app.use(express.static(reactStaticDir));
 // Static directory for file uploads server/public/
 app.use(express.static(uploadsStaticDir));
 app.use(express.json());
+const hashKey = process.env.TOKEN_SECRET;
+if (!hashKey) throw new Error('TOKEN_SECRET not found in .env');
+
+app.post('/api/auth/sign-up', async (req, res, next) => {
+  try {
+    const { username, password } = req.body;
+    if (!username || !password) {
+      throw new ClientError(400, 'username and password are required fields');
+    }
+    const hashedPassword = await argon2.hash(password);
+    const sql = `
+      insert into "users" ("username", "hashedPassword")
+      values ($1, $2)
+      returning *
+    `;
+    const params = [username, hashedPassword];
+    const result = await db.query(sql, params);
+    const [user] = result.rows;
+    res.status(201).json(user);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.post('/api/auth/sign-in', async (req, res, next) => {
+  try {
+    const { username, password } = req.body;
+    if (!username || !password) {
+      throw new ClientError(401, 'invalid login');
+    }
+    const sql = `
+    select "id",
+           "hashedPassword"
+      from "users"
+     where "username" = $1
+  `;
+    const params = [username];
+    const result = await db.query(sql, params);
+    const [user] = result.rows;
+    if (!user) {
+      throw new ClientError(401, 'invalid login');
+    }
+    const { id, hashedPassword } = user;
+    if (!(await argon2.verify(hashedPassword, password))) {
+      throw new ClientError(401, 'invalid login');
+    }
+    const payload = { id, username };
+    const token = jwt.sign(payload, hashKey);
+    res.json({ token, user: payload });
+  } catch (err) {
+    next(err);
+  }
+});
 
 app.get('/api/classes', async (req, res, next) => {
   try {
@@ -63,9 +119,13 @@ app.get('/api/class/:id', async (req, res, next) => {
 
 app.get('/api/builds/', async (req, res, next) => {
   try {
+    if (!req.user) {
+      throw new ClientError(401, 'not logged in');
+    }
     const sql = `
   select * from "builds"
   where "userId"=$1
+  order by "id" desc;
 
   `;
     const params = [1];
@@ -93,16 +153,20 @@ app.get('/api/builds/:id', async (req, res, next) => {
   }
 });
 
-app.post('/api/builds', async (req, res, next) => {
+app.post('/api/builds', authMiddleware, async (req, res, next) => {
   try {
+    if (!req.user) {
+      throw new ClientError(401, 'not logged in');
+    }
     const build = req.body;
     const sql = `
-      insert into "builds" ("classId","buildName","characterName","vigor","mind","endurance","strength","dexterity","intelligence","faith","arcane")
-      values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+      insert into "builds" ("userId","classId","buildName","characterName","vigor","mind","endurance","strength","dexterity","intelligence","faith","arcane")
+      values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
       returning *
       `;
+
     const params = [
-      // Number(build.userId),
+      Number(req.user.id),
       Number(build['class-name']),
       build['build-name'],
       build['character-name'],
@@ -117,7 +181,7 @@ app.post('/api/builds', async (req, res, next) => {
     ];
     const result = await db.query(sql, params);
     const [newBuild] = result.rows;
-    res.json(newBuild);
+    res.status(201).json(newBuild);
   } catch (err) {
     next(err);
   }
