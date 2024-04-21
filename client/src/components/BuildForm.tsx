@@ -18,13 +18,17 @@ type Stats = {
   faith: number;
   arcane: number;
 };
-export function BuildForm() {
+export function BuildForm({ onCreate }) {
   const defaultStats = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
   const [currentClass, setCurrentClass] = useState<Stats>();
   const [currentStats, setCurrentStats] = useState(defaultStats);
   useEffect(() => {
     async function load() {
-      await handleClassSelect(1);
+      try {
+        await handleClassSelect(1);
+      } catch (err) {
+        throw new Error(`Error  ${err}`);
+      }
     }
     load();
   }, []);
@@ -38,10 +42,16 @@ export function BuildForm() {
   }
 
   async function handleSubmit(event) {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    console.log(formData);
-    await addBuild(Object.fromEntries(formData.entries()));
+    try {
+      event.preventDefault();
+      const formData = new FormData(event.currentTarget);
+      event.currentTarget.reset();
+
+      await addBuild(Object.fromEntries(formData.entries()));
+      onCreate();
+    } catch (err) {
+      throw new Error(`Error submitting build ${err}`);
+    }
   }
 
   async function handleClassSelect(selection) {
@@ -54,7 +64,7 @@ export function BuildForm() {
       }
       setCurrentStats(statArr);
     } catch (err) {
-      console.log(err);
+      throw new Error(`Error selecting class ${err}`);
     }
   }
 
@@ -81,11 +91,9 @@ export function BuildForm() {
         padding: '1rem',
         minHeight: '100%',
       }}>
-      <Grid container justifyContent={'center'}>
-        <h1>ELDEN RING CHARACTER BUILDER</h1>
-      </Grid>
+      <h1>ELDEN RING CHARACTER BUILDER</h1>
 
-      <form onSubmit={(e) => handleSubmit(e)}>
+      <form onSubmit={handleSubmit}>
         <Box width={'100%'}>
           <input
             name="build-name"

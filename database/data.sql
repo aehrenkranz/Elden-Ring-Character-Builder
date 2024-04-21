@@ -22,8 +22,3 @@
  ('Prisoner',11,12,11,11,14,14,6,9),
  ('Confessor',10,13,10,12,12,9,14,9),
  ('Wretch',10,10,10,10,10,10,10,10);
-
-insert into "users"
-("username","hashedPassword")
-values
-('Gwen','password1')
