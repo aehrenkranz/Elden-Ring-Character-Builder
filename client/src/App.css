@@ -38,6 +38,12 @@ h4 {
   margin: 3px;
 }
 
+li {
+  font-family: 'Cormorant Garamond', serif;
+  margin-left: 1rem;
+  list-style: disc;
+}
+
 form {
   width: 100%;
 }

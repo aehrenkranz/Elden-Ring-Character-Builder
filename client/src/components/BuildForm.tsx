@@ -85,9 +85,10 @@ export function BuildForm({ onCreate }) {
 
   return (
     <Grid
+      justifyContent={'center'}
       container
       sx={{
-        backgroundColor: 'rgba(0,0,0,.67)',
+        backgroundColor: 'rgba(0,0,0,.8)',
         padding: '1rem',
         minHeight: '100%',
       }}>
@@ -140,7 +141,7 @@ export function BuildForm({ onCreate }) {
               size="medium"
               type="reset"
               sx={{
-                backgroundColor: 'rgba(0, 0, 0, 0.701)',
+                backgroundColor: 'rgba(0, 0, 0, 0.69)',
                 marginRight: '1rem',
                 fontFamily: 'Oswald',
               }}>

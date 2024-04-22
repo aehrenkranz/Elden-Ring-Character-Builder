@@ -2,11 +2,11 @@ export async function readBuilds() {
   const req = {
     method: 'GET',
     headers: {
-      // Authorization: `Bearer ${sessionStorage.getItem('token')}`,
+      Authorization: `Bearer ${sessionStorage.getItem('token')}`,
     },
   };
   const res = await fetch('/api/builds', req);
-  if (!res.ok) throw new Error(`fetch Error ${res.status}`);
+  if (!res.ok) throw new Error(`Error loading builds ${res.status}`);
   return await res.json();
 }
 

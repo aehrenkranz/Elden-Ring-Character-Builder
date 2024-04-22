@@ -31,7 +31,7 @@ export function RegistrationForm() {
       container
       justifyContent={'center'}
       sx={{
-        backgroundColor: 'rgba(0,0,0,.67)',
+        backgroundColor: 'rgba(0,0,0,.8)',
         padding: '1rem',
         height: '100%',
       }}>
