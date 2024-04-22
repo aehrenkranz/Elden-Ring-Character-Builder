@@ -117,18 +117,18 @@ app.get('/api/class/:id', async (req, res, next) => {
   }
 });
 
-app.get('/api/builds/', async (req, res, next) => {
+app.get('/api/builds/', authMiddleware, async (req, res, next) => {
   try {
     if (!req.user) {
       throw new ClientError(401, 'not logged in');
     }
     const sql = `
-  select * from "builds"
+  select "buildName","characterName","vigor","mind","endurance","strength","dexterity","intelligence","faith","arcane" from "builds"
   where "userId"=$1
   order by "id" desc;
 
   `;
-    const params = [1];
+    const params = [Number(req.user.id)];
     const result = await db.query(sql, params);
     const userBuilds = result.rows;
     res.json(userBuilds);

@@ -1,13 +1,13 @@
 import { useState } from 'react';
-
 import './App.css';
 import { BuildForm } from './components/BuildForm';
 import { RegistrationForm } from './components/RegistrationForm';
 import { SignInForm } from './components/SignInForm';
 import { NavBar } from './components/NavBar';
+import { BuildList } from './components/BuildList';
 
 export default function App() {
-  const [page, setPage] = useState('register');
+  const [page, setPage] = useState('builds');
   const [editing, setEditing] = useState<any>();
 
   function handleNavigate(page) {
@@ -23,7 +23,7 @@ export default function App() {
   return (
     <>
       <NavBar onNavigate={handleNavigate} setEditing={setEditing} />
-
+      {page === 'builds' && editing === undefined && <BuildList />}
       {page === 'register' && <RegistrationForm />}
       {page === 'sign-in' && (
         <SignInForm onSignIn={() => handleNavigate('builds')} />

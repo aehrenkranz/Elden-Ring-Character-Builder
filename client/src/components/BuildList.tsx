@@ -1,63 +1,44 @@
 import { useState, useEffect } from 'react';
-import { getClasses } from '../data';
+import { readBuilds } from '../data';
 
-import { Grid, Button, List } from '@mui/material';
+import { Grid, List } from '@mui/material';
 export function BuildList() {
   const [builds, setBuilds] = useState<any[]>([]);
-  const [error, setError] = useState<unknown>();
 
   useEffect(() => {
     async function load() {
       try {
-        const classes = await getClasses();
-        setBuilds(classes);
+        const builds = await readBuilds();
+        setBuilds(builds);
       } catch (err) {
-        setError(err);
+        alert(`Error loading builds ${err}`);
       }
     }
     load();
   }, []);
-  if (error) {
-    console.log(error);
-  }
+
   return (
-    <Grid container>
-      <Grid
-        container
-        sx={{ p: 2, backgroundColor: 'rgba(0,0,0,.5)' }}
-        direction="column">
-        <Grid container>
-          <List>
-            {builds.map((build) => {
-              const x: any = [];
-              for (const key in build) {
-                x.push(<span>{build[key]}, </span>);
-              }
-              return <li>{x}</li>;
-            })}
-          </List>
-        </Grid>
-        <Grid container justifyContent={'center'}>
-          <Button
-            variant="contained"
-            sx={{
-              '&': {
-                minWidth: {
-                  xs: 10,
-                  md: 40,
-                },
-                width: {
-                  xs: 50,
-                  md: 70,
-                },
-              },
-              fontFamily: 'Oswald',
-              textTransform: 'capitalize',
-            }}>
-            test
-          </Button>
-        </Grid>
+    <Grid
+      container
+      sx={{ p: 2, backgroundColor: 'rgba(0,0,0,.8)', minHeight: '100%' }}
+      direction="column">
+      <h1>ELDEN RING CHARACTER BUILDER</h1>
+      <Grid container sx={{ marginTop: '2rem' }}>
+        <List>
+          {builds.map((build) => {
+            return (
+              <li>
+                <h3
+                  style={{
+                    marginTop: '1rem',
+                  }}>{`BUILD NAME: ${build.buildName}`}</h3>
+                <span>{`CHARACTER NAME: ${build.characterName}`}</span>
+              </li>
+            );
+          })}
+        </List>
       </Grid>
+      <Grid container justifyContent={'center'}></Grid>
     </Grid>
   );
 }

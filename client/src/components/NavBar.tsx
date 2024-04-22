@@ -44,7 +44,10 @@ export function NavBar({ onNavigate, setEditing }) {
             sx={{ fontFamily: 'Oswald', color: 'white' }}>
             NEW BUILD
           </Button>
-          <Button size="large" sx={{ fontFamily: 'Oswald', color: 'white' }}>
+          <Button
+            onClick={() => onNavigate('builds')}
+            size="large"
+            sx={{ fontFamily: 'Oswald', color: 'white' }}>
             BUILDS
           </Button>
           <Button
