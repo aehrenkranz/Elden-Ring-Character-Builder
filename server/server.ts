@@ -123,7 +123,7 @@ app.get('/api/builds/', authMiddleware, async (req, res, next) => {
       throw new ClientError(401, 'not logged in');
     }
     const sql = `
-  select "buildName","characterName","vigor","mind","endurance","strength","dexterity","intelligence","faith","arcane" from "builds"
+  select "id","classId", "buildName","characterName","vigor","mind","endurance","strength","dexterity","intelligence","faith","arcane" from "builds"
   where "userId"=$1
   order by "id" desc;
 
@@ -132,22 +132,6 @@ app.get('/api/builds/', authMiddleware, async (req, res, next) => {
     const result = await db.query(sql, params);
     const userBuilds = result.rows;
     res.json(userBuilds);
-  } catch (err) {
-    next(err);
-  }
-});
-
-app.get('/api/builds/:id', async (req, res, next) => {
-  try {
-    const buildId = Number(req.params.id);
-    const sql = `
-  select * from "builds"
-  where "id" =$1
-  `;
-    const params = [buildId];
-    const result = await db.query(sql, params);
-    const selectedBuild = result.rows[0];
-    res.json(selectedBuild);
   } catch (err) {
     next(err);
   }
@@ -187,10 +171,15 @@ app.post('/api/builds', authMiddleware, async (req, res, next) => {
   }
 });
 
-app.put('/api/builds/:id', async (req, res, next) => {
+app.put('/api/builds/:id', authMiddleware, async (req, res, next) => {
   try {
-    const buildId = Number(req.params.id);
+    if (!req.user) {
+      throw new ClientError(401, 'not logged in');
+    }
+
     const build = req.body;
+    const id = req.params.id;
+
     const sql = `
     update "builds"
     set "classId"=$1,
@@ -208,9 +197,9 @@ app.put('/api/builds/:id', async (req, res, next) => {
     returning *
   `;
     const params = [
-      Number(build.classId),
-      build.buildName,
-      build.characterName,
+      Number(build['class-name']),
+      build['build-name'],
+      build['character-name'],
       build.vigor,
       build.mind,
       build.endurance,
@@ -219,7 +208,7 @@ app.put('/api/builds/:id', async (req, res, next) => {
       build.intelligence,
       build.faith,
       build.arcane,
-      buildId,
+      id,
     ];
     const result = await db.query(sql, params);
     const updatedBuild = result.rows[0];

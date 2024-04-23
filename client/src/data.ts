@@ -15,15 +15,6 @@ export async function readSingleClass(classId) {
   return await res.json();
 }
 
-export async function readSingleBuild(buildId) {
-  const req = {
-    method: 'GET',
-  };
-  const res = await fetch(`api/builds/${buildId}`, req);
-  if (!res.ok) throw new Error(`fetch Error ${res.status}`);
-  return await res.json();
-}
-
 export async function getClasses() {
   const res = await fetch('/api/classes');
   return await res.json();
@@ -55,7 +46,7 @@ export async function updateBuild(build) {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
-      // Authorization: `Bearer ${sessionStorage.getItem('token')}`,
+      Authorization: `Bearer ${sessionStorage.getItem('token')}`,
     },
     body: JSON.stringify(build),
   };
