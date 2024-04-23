@@ -44,6 +44,10 @@ li {
   list-style: disc;
 }
 
+li > h3 {
+  cursor: pointer;
+}
+
 form {
   width: 100%;
 }

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { readBuilds } from '../data';
 
 import { Grid, List } from '@mui/material';
-export function BuildList() {
+export function BuildList({ onEdit }) {
   const [builds, setBuilds] = useState<any[]>([]);
 
   useEffect(() => {
@@ -27,8 +27,9 @@ export function BuildList() {
         <List>
           {builds.map((build) => {
             return (
-              <li>
+              <li key={build.id}>
                 <h3
+                  onClick={() => onEdit(build)}
                   style={{
                     marginTop: '1rem',
                   }}>{`BUILD NAME: ${build.buildName}`}</h3>

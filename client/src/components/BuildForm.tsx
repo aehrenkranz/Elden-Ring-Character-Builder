@@ -1,4 +1,4 @@
-import { Box, Button, Grid } from '@mui/material';
+import { Box, Button, Grid, Typography, Modal } from '@mui/material';
 import { useEffect, useState } from 'react';
 import {
   addBuild,
@@ -6,6 +6,8 @@ import {
   calculateFp,
   calculateHp,
   calculateStamina,
+  updateBuild,
+  removeBuild,
 } from '../data';
 
 type Stats = {
@@ -18,20 +20,37 @@ type Stats = {
   faith: number;
   arcane: number;
 };
-export function BuildForm({ onCreate }) {
+export function BuildForm({ onCreate, build }) {
   const defaultStats = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
   const [currentClass, setCurrentClass] = useState<Stats>();
   const [currentStats, setCurrentStats] = useState(defaultStats);
+  const [isDeleting, setIsDeleting] = useState(false);
   useEffect(() => {
     async function load() {
       try {
-        await handleClassSelect(1);
+        if (build) {
+          await handleClassSelect(Number(build.classId));
+          const statArr: number[] = [];
+          for (const key in build) {
+            if (
+              key !== 'id' &&
+              key !== 'classId' &&
+              key !== 'buildName' &&
+              key !== 'characterName'
+            ) {
+              statArr.push(build[key]);
+            }
+          }
+          setCurrentStats(statArr);
+        } else {
+          await handleClassSelect(1);
+        }
       } catch (err) {
         throw new Error(`Error  ${err}`);
       }
     }
     load();
-  }, []);
+  }, [build]);
 
   let level =
     currentStats.reduce((total, current) => {
@@ -45,12 +64,29 @@ export function BuildForm({ onCreate }) {
     try {
       event.preventDefault();
       const formData = new FormData(event.currentTarget);
+      const newBuild = Object.fromEntries(formData.entries());
       event.currentTarget.reset();
-
-      await addBuild(Object.fromEntries(formData.entries()));
+      if (build) {
+        newBuild.id = build.id;
+        await updateBuild(newBuild);
+      } else {
+        await addBuild(newBuild);
+      }
       onCreate();
     } catch (err) {
       throw new Error(`Error submitting build ${err}`);
+    }
+  }
+
+  async function handleDelete() {
+    if (!build) throw new Error('Should not happen');
+    try {
+      await removeBuild(build.id);
+      onCreate();
+    } catch (err) {
+      alert(`Error deleting entry: ${err}`);
+    } finally {
+      setIsDeleting(false);
     }
   }
 
@@ -97,6 +133,7 @@ export function BuildForm({ onCreate }) {
       <form onSubmit={handleSubmit}>
         <Box width={'100%'}>
           <input
+            defaultValue={build?.buildName}
             name="build-name"
             id="build-name"
             required
@@ -109,6 +146,7 @@ export function BuildForm({ onCreate }) {
             <label>CHARACTER NAME</label>
           </Box>
           <input
+            defaultValue={build?.characterName}
             name="character-name"
             id="character-name"
             required
@@ -135,6 +173,70 @@ export function BuildForm({ onCreate }) {
             </select>
           </Grid>
           <Grid container xs={6} item justifyContent={'right'}>
+            {build && (
+              <Button
+                sx={{
+                  backgroundColor: 'rgba(0, 0, 0, 0.69)',
+                  marginRight: '1rem',
+                }}
+                onClick={() => setIsDeleting(true)}
+                color="error"
+                variant="outlined">
+                DELETE BUILD
+              </Button>
+            )}
+            <Modal
+              open={isDeleting}
+              onClose={() => setIsDeleting(false)}
+              aria-labelledby="modal-modal-title"
+              aria-describedby="modal-modal-description">
+              <Box
+                sx={{
+                  borderRadius: '4px',
+                  position: 'absolute' as const,
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: 400,
+                  color: 'white',
+                  bgcolor: 'black',
+                  border: '2px solid #000',
+                  boxShadow: 24,
+                  p: 4,
+                }}>
+                <Typography id="modal-modal-title" variant="h6" component="h2">
+                  Are you sure you want to delete this build?
+                </Typography>
+                <Typography
+                  id="modal-modal-description"
+                  sx={{ mt: 2, textAlign: 'center' }}>
+                  This action cannot be undone.
+                </Typography>
+                <Grid
+                  container
+                  sx={{ marginTop: '1rem' }}
+                  justifyContent={'right'}>
+                  <Button
+                    sx={{
+                      marginRight: '1rem',
+                    }}
+                    onClick={() => setIsDeleting(false)}
+                    variant="contained">
+                    CANCEL
+                  </Button>
+                  <Button
+                    sx={{
+                      backgroundColor: 'rgba(0, 0, 0, 0.69)',
+                      marginRight: '1rem',
+                    }}
+                    onClick={() => handleDelete()}
+                    color="error"
+                    variant="outlined">
+                    DELETE
+                  </Button>
+                </Grid>
+              </Box>
+            </Modal>
             <Button
               variant="outlined"
               color="error"
@@ -347,7 +449,7 @@ export function BuildForm({ onCreate }) {
                 type="number"
                 min={1}
                 max={99}
-                value={currentStats[7].toString()}
+                value={currentStats[7]}
                 onChange={(event) => {
                   handleStatChange(event);
                 }}></input>
